@@ -1,0 +1,83 @@
+# Spring Boot 3 应用配置文件
+
+# 日志配置
+logging:
+  level:
+    '[com.agentworkflow.config.JwtAuthenticationFilter]': INFO
+    '[org.springframework.security]': INFO
+
+# Spring配置
+spring:
+  # 允许循环依赖（开发环境临时解决方案）
+  main:
+    allow-circular-references: true
+  # 数据源配置 - MySQL
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:agent_studio_lite}?useSSL=false&serverTimezone=Asia/Shanghai&useUnicode=true
+    username: ${MYSQL_USER:admin}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+  # Redis配置 (Spring Boot 3默认使用Lettuce而不是Jedis)
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD}
+      database: 0
+      lettuce:
+        pool:
+          max-active: 8
+          max-wait: -1ms  # 或者 PT-1S 表示不限制等待时间
+          max-idle: 8
+          min-idle: 0
+  # 国际化配置
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+
+# 服务器配置
+server:
+  port: 8080  # 服务器端口
+
+# MyBatis配置
+mybatis:
+  # 实体类包扫描路径
+  type-aliases-package: com.agentworkflow.entity
+  # mapper XML文件路径
+  mapper-locations: classpath*:mapper/**/*.xml
+  # 配置驼峰命名转换
+  configuration:
+    map-underscore-to-camel-case: true
+    # 显示SQL语句
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# JWT配置
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: 86400000  # 24小时，单位毫秒
+
+# CORS配置
+cors:
+  allowed-origins: "http://localhost:81,http://localhost:3000"
+  allowed-methods: "GET,POST,PUT,DELETE,OPTIONS"
+  allowed-headers: "*"
+
+# SpringDoc OpenAPI (Swagger)配置
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    # 自定义Swagger UI配置
+    config-url: /v3/api-docs/swagger-config
+    url: /v3/api-docs
+  # 配置要扫描的包路径，用于发现Controller
+  packages-to-scan: com.agentworkflow.controller
+  # 配置要匹配的路径模式
+  paths-to-match: /**

@@ -1,0 +1,128 @@
+# Docker Compose配置文件 - 测试环境
+
+services:
+  # 前端服务
+  frontend-test:
+    build:
+      context: ./Front-end
+      dockerfile: Dockerfile
+    ports:
+      - "81:80"
+    depends_on:
+      - backend-test
+    networks:
+      - agent-network-test
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  # 后端服务
+  backend-test:
+    build:
+      context: ./Back-end
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    depends_on:
+      - mysql-test
+      - redis-test
+    networks:
+      - agent-network-test
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      # 直接使用与application.yml匹配的环境变量名称
+      - MYSQL_HOST=mysql-test
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=agent_workflow
+      - MYSQL_USER=workflow_user
+      - MYSQL_PASSWORD=workflow_pass_123
+      - REDIS_HOST=redis-test
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=workflow_redis123456
+      - JWT_SECRET=5f2b8a4c6d1e7g3h9i2j4k8l0m6n7o5p1q9r3s2t7u4v8w6x1y3z9
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health/status"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+
+  # MySQL数据库
+  mysql-test:
+    image: mysql:8.0
+    container_name: agent-workflow-mysql-test
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root123456
+      - MYSQL_DATABASE=agent_workflow
+      - MYSQL_USER=workflow_user
+      - MYSQL_PASSWORD=workflow_pass_123
+    volumes:
+      - mysql-data-test:/var/lib/mysql
+      - ./Database/init:/docker-entrypoint-initdb.d
+    networks:
+      - agent-network-test
+    restart: unless-stopped
+    command:
+      - "--default-authentication-plugin=mysql_native_password"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+      - "--max_connections=1000"
+      - "--max_allowed_packet=64M"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot123456"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis缓存
+  redis-test:
+    image: redis:7-alpine
+    container_name: agent-workflow-redis-test
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-data-test:/data
+    networks:
+      - agent-network-test
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass workflow_redis123456
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "workflow_redis123456", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # 数据库管理工具
+  phpmyadmin-test:
+    image: phpmyadmin/phpmyadmin
+    container_name: agent-workflow-phpmyadmin-test
+    ports:
+      - "8083:80"
+    environment:
+      - PMA_HOST=mysql-test
+      - PMA_PORT=3306
+      - PMA_USER=root
+      - PMA_PASSWORD=root123456
+    depends_on:
+      mysql-test:
+        condition: service_healthy
+    networks:
+      - agent-network-test
+    restart: unless-stopped
+
+volumes:
+  mysql-data-test:
+    driver: local
+  redis-data-test:
+    driver: local
+
+networks:
+  agent-network-test:
+    driver: bridge

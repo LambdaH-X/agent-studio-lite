@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.agentworkflow.mapper.UserMapper">
+    
+    <resultMap id="UserResultMap" type="com.agentworkflow.entity.User">
+        <id column="id" property="id" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="nickname" property="nickname" />
+        <result column="email" property="email" />
+        <result column="phone" property="phone" />
+        <result column="avatar" property="avatar" />
+        <result column="gender" property="gender" />
+        <!-- birthday字段已删除 -->
+        <result column="status" property="status" />
+        <!-- last_login_time字段已删除 -->
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="is_deleted" property="isDeleted" />
+    </resultMap>
+    
+    <!-- 查询所有用户 -->
+    <select id="findAll" resultMap="UserResultMap">
+        SELECT 
+            id, username, password, nickname, email, phone, avatar,
+            gender, status, created_at,
+            updated_at, is_deleted
+        FROM user
+        WHERE is_deleted = 0
+    </select>
+    
+    <!-- 根据ID查询用户 -->
+    <select id="findById" parameterType="long" resultMap="UserResultMap">
+        SELECT 
+            id, username, password, nickname, email, phone, avatar,
+            gender, status, created_at,
+            updated_at, is_deleted
+        FROM user
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </select>
+    
+    <!-- 根据用户名查询用户 -->
+    <select id="findByUsername" parameterType="string" resultMap="UserResultMap">
+        SELECT 
+            id, username, password, nickname, email, phone, avatar,
+            gender, status, created_at,
+            updated_at, is_deleted
+        FROM user
+        WHERE username = #{username}
+          AND is_deleted = 0
+    </select>
+    
+    <!-- 检查用户名是否存在 -->
+    <select id="existsByUsername" parameterType="string" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM user
+        WHERE username = #{username}
+          AND is_deleted = 0
+    </select>
+    
+    <!-- 检查邮箱是否存在 -->
+    <select id="existsByEmail" parameterType="string" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM user
+        WHERE email = #{email}
+          AND is_deleted = 0
+    </select>
+    
+    <!-- 检查手机号是否存在 -->
+    <select id="existsByPhone" parameterType="string" resultType="boolean">
+        SELECT COUNT(*) > 0
+        FROM user
+        WHERE phone = #{phone}
+          AND is_deleted = 0
+    </select>
+    
+    <!-- 更新用户最后登录时间 -->
+    <update id="updateLastLoginTime" parameterType="long">
+        UPDATE user
+        SET last_login_time = NOW()
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </update>
+    
+    <!-- 插入新用户 -->
+    <insert id="insertUser" parameterType="com.agentworkflow.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (
+            username, password, nickname, email, phone, 
+            avatar, gender, status, created_at,
+            updated_at, is_deleted
+        ) VALUES (
+            #{username}, #{password}, #{nickname}, #{email}, #{phone},
+            #{avatar}, #{gender}, #{status}, #{createdAt},
+            #{updatedAt}, #{isDeleted}
+        )
+    </insert>
+    
+    <!-- 更新用户资料 -->
+    <update id="updateUser" parameterType="com.agentworkflow.entity.User">
+        UPDATE user
+        SET 
+            nickname = #{nickname},
+            email = #{email},
+            phone = #{phone},
+            avatar = #{avatar},
+            gender = #{gender},
+            birthday = #{birthday},
+            status = #{status},
+            updated_at = #{updatedAt}
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </update>
+    
+    <!-- 修改密码 -->
+    <update id="updatePassword">
+        UPDATE user
+        SET 
+            password = #{password},
+            updated_at = NOW()
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </update>
+</mapper>

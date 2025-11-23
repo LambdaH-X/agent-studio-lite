@@ -1,0 +1,65 @@
+# Agent Studio Lite 云端部署项目结构
+
+```
+Agent Studio Lite/
+├── Back-end/                # 后端Spring Boot项目
+│   ├── .idea/
+│   ├── src/
+│   ├── target/
+│   ├── pom.xml
+│   └── Dockerfile           # 后端Docker构建文件
+├── Front-end/               # 前端Vue项目
+│   ├── src/
+│   ├── dist/
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── vite.config.js
+│   └── Dockerfile           # 前端Docker构建文件
+├── Database/                # 数据库相关文件
+│   ├── init/                # 数据库初始化脚本
+│   │   ├── 01-schema.sql    # 表结构定义
+│   │   └── 02-data.sql      # 初始数据
+│   └── docker-compose.yml   # 数据库服务配置
+├── docker-compose.yml       # 全局服务编排配置
+├── .env                     # 环境变量配置文件
+├── .env.example             # 环境变量示例文件
+├── deploy.sh                # 一键部署脚本
+├── docs/                    # 项目文档
+├── 云端docker部署过程.md     # 部署文档
+└── 云端项目结构.txt          # 项目结构说明
+```
+
+## 关键文件说明
+
+### 1. 后端相关
+- **Back-end/Dockerfile**: 用于构建Spring Boot应用Docker镜像的多阶段构建文件
+- **Back-end/pom.xml**: Maven项目配置，定义了Spring Boot依赖和构建配置
+
+### 2. 前端相关  
+- **Front-end/Dockerfile**: 用于构建Vue应用Docker镜像的多阶段构建文件
+- **Front-end/package.json**: npm项目配置，定义了Vue、Element Plus等依赖
+
+### 3. 数据库相关
+- **Database/init/**: 包含数据库初始化脚本
+- **Database/docker-compose.yml**: 数据库服务（MySQL、Redis）的Docker配置
+
+### 4. 部署相关
+- **docker-compose.yml**: 全局服务编排，包含前端、后端、数据库所有服务
+- **.env**: 环境变量配置，存储敏感信息和配置参数
+- **.env.example**: 环境变量示例，指导用户配置必要参数
+- **deploy.sh**: 一键部署脚本，自动化环境检查、依赖安装和服务启动
+
+### 5. 文档相关
+- **云端项目结构.txt**: 项目文件结构说明
+- **云端docker部署过程.md**: 部署步骤详细说明文档
+- **docs/**: 其他项目文档
+
+## Docker化关键点
+
+1. **多阶段构建**：前后端均采用多阶段构建优化镜像大小
+2. **服务编排**：通过docker-compose统一管理所有服务
+3. **环境隔离**：使用环境变量管理不同环境配置
+4. **数据持久化**：数据库和Redis数据通过卷挂载实现持久化
+5. **网络通信**：服务间通过自定义网络进行通信
+6. **健康检查**：各服务配置健康检查确保可用性
+7. **一键部署**：通过deploy.sh脚本实现自动化部署

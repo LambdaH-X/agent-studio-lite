@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.agentworkflow.mapper.AgentMapper">
+
+    <!-- 智能体相关SQL -->
+    <select id="getAllAgents" resultType="com.agentworkflow.entity.Agent">
+        SELECT * FROM agent WHERE is_deleted = 0
+    </select>
+    
+    <select id="getAgentsByCreatedBy" resultType="com.agentworkflow.entity.Agent">
+        SELECT * FROM agent WHERE created_by = #{createdBy} AND is_deleted = 0
+    </select>
+
+    <select id="getAgentById" resultType="com.agentworkflow.entity.Agent">
+        SELECT * FROM agent WHERE id = #{id} AND is_deleted = 0
+    </select>
+    
+    <select id="getAgentByIdAndCreatedBy" resultType="com.agentworkflow.entity.Agent">
+        SELECT * FROM agent WHERE id = #{id} AND created_by = #{createdBy} AND is_deleted = 0
+    </select>
+
+    <insert id="insertAgent" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO agent (name, description, type, status, created_by, created_at, updated_at)
+        VALUES (#{name}, #{description}, #{type}, #{status}, #{createdBy}, #{createdAt}, #{updatedAt})
+    </insert>
+
+    <update id="updateAgent">
+        UPDATE agent
+        SET name = #{name}, description = #{description}, type = #{type},
+            status = #{status}, updated_at = #{updatedAt}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteAgent">
+        UPDATE agent SET is_deleted = 1 WHERE id = #{id}
+    </delete>
+
+    <!-- 智能体知识库相关SQL -->
+    <select id="getAgentKnowledge" resultType="com.agentworkflow.entity.AgentKnowledge">
+        SELECT * FROM agent_knowledge WHERE agent_id = #{agentId}
+    </select>
+
+    <insert id="insertAgentKnowledge" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO agent_knowledge (agent_id, knowledge_base_id)
+        VALUES (#{agentId}, #{knowledgeBaseId})
+    </insert>
+
+    <delete id="deleteAgentKnowledge">
+        DELETE FROM agent_knowledge WHERE id = #{id}
+    </delete>
+
+    <!-- 智能体插件相关SQL -->
+    <select id="getAllPlugins" resultType="com.agentworkflow.entity.AgentPlugin">
+        SELECT * FROM agent_plugin WHERE status = 1 ORDER BY created_at DESC
+    </select>
+
+    <select id="getPluginById" resultType="com.agentworkflow.entity.AgentPlugin">
+        SELECT * FROM agent_plugin WHERE id = #{id}
+    </select>
+
+    <insert id="insertPlugin" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO agent_plugin (name, description, type, config_json, status)
+        VALUES (#{name}, #{description}, #{type}, #{configJson}, #{status})
+    </insert>
+
+    <update id="updatePlugin">
+        UPDATE agent_plugin
+        SET name = #{name}, description = #{description}, type = #{type},
+            config_json = #{configJson}, status = #{status}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deletePlugin">
+        UPDATE agent_plugin SET status = 0 WHERE id = #{id}
+    </delete>
+</mapper>

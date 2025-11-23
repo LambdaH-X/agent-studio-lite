@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.agentworkflow.mapper.AdminMapper">
+    
+    <resultMap id="AdminResultMap" type="com.agentworkflow.entity.Admin">
+        <id column="id" property="id" />
+        <result column="username" property="username" />
+        <result column="password" property="password" />
+        <result column="nickname" property="nickname" />
+        <result column="email" property="email" />
+        <result column="phone" property="phone" />
+        <result column="avatar" property="avatar" />
+        <result column="role_id" property="roleId" />
+        <result column="status" property="status" />
+        <result column="last_login_time" property="lastLoginTime" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+        <result column="is_deleted" property="isDeleted" />
+    </resultMap>
+    
+    <!-- 根据用户名查询管理员 -->
+    <select id="findByUsername" parameterType="String" resultMap="AdminResultMap">
+        SELECT 
+            id, username, password, nickname, email, phone, avatar,
+            role_id, status, last_login_time, created_at,
+            updated_at, is_deleted
+        FROM admin
+        WHERE username = #{username}
+          AND is_deleted = 0
+    </select>
+    
+    <!-- 更新管理员最后登录时间 -->
+    <update id="updateLastLoginTime" parameterType="long">
+        UPDATE admin
+        SET last_login_time = NOW()
+        WHERE id = #{id}
+          AND is_deleted = 0
+    </update>
+</mapper>

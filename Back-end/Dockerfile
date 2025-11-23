@@ -24,13 +24,13 @@ WORKDIR /app
 COPY --from=build /app/target/back-end-1.0.0.jar app.jar
 
 # 设置时区
-RUN apk add --no-cache tzdata && \
+RUN apk add --no-cache tzdata curl && \
     ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone
 
 # 添加健康检查
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/health/status || exit 1
 
 # 配置JVM参数
 ENV JAVA_OPTS="-Xms512m -Xmx1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
